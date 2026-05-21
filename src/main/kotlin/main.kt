@@ -12,7 +12,9 @@ import io.ktor.server.application.*
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.koin.core.component.getScopeName
 import org.koin.ktor.ext.get
+import java.util.ServiceLoader
 
 fun main(args: Array<String>) {
     embeddedServer(
@@ -30,7 +32,11 @@ fun Application.module(){
     configureAuth()
 
     configureKoin()
-
+    ServiceLoader.load(
+        io.r2dbc.spi.ConnectionFactoryProvider::class.java
+    ).forEach {
+        println("DRIVER -> ${it.getScopeName()}")
+    }
     val db = get<R2dbcDatabase>()
     launch {
         try {

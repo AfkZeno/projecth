@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.logback.classic)
 
     implementation(libs.postgre)
+    runtimeOnly(libs.postgre)
 
     implementation(libs.koin.logger)
     implementation(libs.datetime)
@@ -60,8 +61,6 @@ tasks{
         mergeServiceFiles()
         mergeServiceFiles("META-INF/services")
 
-        relocate("io.r2dbc", "shadow.io.r2dbc")
-        relocate("org.postgresql", "shadow.org.postgresql")
 
         manifest{
             attributes["Main-Class"] = "com.backend.MainKt"
