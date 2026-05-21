@@ -58,9 +58,9 @@ dependencies {
 tasks{
     shadowJar{
         manifest{
-            attributes["Main-Class"] = "com.backend.ApplicationKt"
+            attributes["Main-Class"] = "com.backend.MainKt"
         }
-        archiveBaseName.set("StoreBackend")
+        archiveBaseName.set("ProjectHBackend")
         archiveClassifier.set("")
         archiveVersion.set("")
         mergeServiceFiles()
