@@ -57,6 +57,13 @@ dependencies {
 
 tasks{
     shadowJar{
+
+        mergeServiceFiles()
+        mergeServiceFiles("META-INF/services")
+
+        relocate("io.r2dbc", "shadow.io.r2dbc")
+        relocate("org.postgresql", "shadow.org.postgresql")
+
         manifest{
             attributes["Main-Class"] = "com.backend.MainKt"
         }
