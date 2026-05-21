@@ -18,8 +18,10 @@ val KoinModules = module {
 val DatabaseModule = module {
     single<R2dbcDatabase>{
         val url = System.getenv("DATABASE_URL") ?: throw IllegalStateException("DATABASE_URL environment variable is not set!")
+        println("Intentando conectar a: $url")
         R2dbcDatabase.connect(
-            url = url
+            url = url,
+            driver = "postgresql"
         )
     }
 }
