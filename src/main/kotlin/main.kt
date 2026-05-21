@@ -6,20 +6,40 @@ import com.backend.config.configureHTTP
 import com.backend.config.configureKoin
 import com.backend.config.configureMonitoring
 import com.backend.config.configureRoutes
+import com.backend.database.DbFactory
 import io.ktor.server.engine.*
 import io.ktor.server.application.*
 import io.ktor.server.netty.Netty
+import kotlinx.coroutines.launch
+import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
+import org.koin.ktor.ext.get
 
 fun main(args: Array<String>) {
     embeddedServer(
         factory = Netty,
         port = 8080,
     ) {
-        configureContentNegotiation()
-        configureMonitoring()
-        configureHTTP()
-        configureKoin()
-        configureAuth()
-        configureRoutes()
+    module()
     }.start(wait = true)
+}
+
+fun Application.module(){
+    configureContentNegotiation()
+    configureMonitoring()
+    configureHTTP()
+    configureAuth()
+
+    configureKoin()
+
+    val db = get<R2dbcDatabase>()
+    launch {
+        try {
+            DbFactory.initDb(db)
+        }catch (e: Exception){
+            log.error("Error al inicializar la base de datos", e)
+        }
+    }
+
+
+    configureRoutes()
 }

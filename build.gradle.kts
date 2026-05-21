@@ -44,8 +44,7 @@ dependencies {
     implementation(libs.koin.loggerSlf4j)
     implementation(libs.logback.classic)
 
-
-    implementation("org.postgresql:r2dbc-postgresql:1.0.5.RELEASE")
+    implementation("org.postgresql:r2dbc-postgresql:1.1.1.RELEASE")
 
     implementation(libs.postgre)
     implementation(libs.koin.logger)
