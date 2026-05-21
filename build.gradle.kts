@@ -46,7 +46,6 @@ dependencies {
 
     implementation(libs.postgre)
 
-    implementation(libs.postgre)
     implementation(libs.koin.logger)
     implementation(libs.datetime)
     implementation(libs.bcrypt)
