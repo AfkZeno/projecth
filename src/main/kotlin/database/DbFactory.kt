@@ -1,6 +1,8 @@
 package com.backend.database
 
+import com.backend.data.datasource.Chapters
 import com.backend.data.datasource.Mangas
+import com.backend.data.datasource.Pages
 import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
@@ -15,7 +17,9 @@ object DbFactory {
                 println("Logger añadido")
             }
             SchemaUtils.create(
-                Mangas
+                Mangas,
+                Chapters,
+                Pages
             )
         }
         println("Tablas creadas o verificadas correctamente")

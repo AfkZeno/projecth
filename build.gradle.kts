@@ -26,6 +26,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
+
+    implementation(libs.cloudinary)
+
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.auth)
     implementation(ktorLibs.server.auth.jwt)
@@ -44,6 +47,7 @@ dependencies {
 
     implementation(libs.postgre)
     runtimeOnly(libs.postgre)
+
 
     implementation(libs.koin.logger)
     implementation(libs.datetime)
