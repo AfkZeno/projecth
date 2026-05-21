@@ -10,15 +10,9 @@ import io.r2dbc.spi.ConnectionFactoryOptions
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.koin.dsl.module
 
-val KoinModules = module {
-    includes(DatabaseModule,storageModule)
-    //repo
-    single<MangaRepository> { MangaRepositoryImpl(get()) }
-    //service
-    single { MangaService(get(), get()) }
-}
 
-val DatabaseModule = module {
+
+val databaseModule = module {
     single<R2dbcDatabase>{
         val url = System.getenv("DATABASE_URL") ?: throw IllegalStateException("DATABASE_URL environment variable is not set!")
         println("Intentando conectar a: $url")
@@ -43,3 +37,15 @@ val storageModule = module {
         CloudinaryService(get())
     }
 }
+
+
+val KoinModules = module {
+    includes(databaseModule,storageModule)
+    //repo
+    single<MangaRepository> { MangaRepositoryImpl(get()) }
+    //service
+    single { MangaService(get(), get()) }
+}
+
+
+

@@ -1,7 +1,9 @@
 package com.backend.config
 
-import com.backend.di.DatabaseModule
+
 import com.backend.di.KoinModules
+import com.backend.di.databaseModule
+import com.backend.di.storageModule
 import com.backend.presentation.routes.mangaRoute
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -50,7 +52,8 @@ fun Application.configureKoin() {
     install(Koin) {
         slf4jLogger()
         modules(
-            DatabaseModule,
+            databaseModule,
+            storageModule,
             KoinModules,
         )
     }
