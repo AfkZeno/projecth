@@ -13,5 +13,6 @@ data class CreateMangaRequest(
     val artist: String? = null,
     val status: MangaStatus = MangaStatus.ONGOING,
     val type: MangaType = MangaType.MANGA,
-    val genres: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val genres: List<String> = emptyList(),
 )

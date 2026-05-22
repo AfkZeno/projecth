@@ -2,6 +2,7 @@ package com.backend.presentation.routes
 
 import com.backend.domain.service.MangaService
 import com.backend.presentation.request.CreateMangaRequest
+import com.backend.presentation.response.HealthResponse
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -14,6 +15,11 @@ fun Application.mangaRoute(){
     val service by inject<MangaService>()
 
     routing {
+
+        get("/health"){
+            call.respond(HealthResponse("xd"))
+        }
+
         post("/new/manga") {
             try {
                 val multipart = call.receiveMultipart()
@@ -43,6 +49,10 @@ fun Application.mangaRoute(){
                                 }
                                 "type" -> {
                                     request = request?.copy(type = enumValueOf(part.value))
+                                }
+                                "tags" -> {
+                                    val tagsList = part.value.split(",").map { it.trim() }.filter { it.isNotBlank() }
+                                    request = request?.copy(tags = tagsList)
                                 }
                                 "genres" -> {
                                     val genresList = part.value.split(",").map { it.trim() }.filter { it.isNotBlank() }
