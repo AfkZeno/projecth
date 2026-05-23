@@ -44,7 +44,7 @@ val KoinModules = module {
     //repo
     single<MangaRepository> { MangaRepositoryImpl(get()) }
     //service
-    single { MangaService(get(), get()) }
+    single { MangaService(get()) }
 }
 
 
