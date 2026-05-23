@@ -29,4 +29,11 @@ object DbFactory {
         val env = System.getenv("ENV") ?: "production"
         return env == "local"
     }
+
+    suspend fun command(command: String) {
+        suspendTransaction {
+            exec(command)
+        }
+    }
+
 }
