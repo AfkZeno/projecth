@@ -31,4 +31,6 @@ object Mangas : IntIdTable("mangas") {
 
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
+
+    val coverImagePublicId = text("public_id").nullable()
 }

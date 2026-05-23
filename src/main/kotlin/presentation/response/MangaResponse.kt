@@ -20,6 +20,7 @@ data class MangaResponse(
     val bannerImageUrl: String?,
     val status: MangaStatus,
     val type: MangaType,
+    val tags: List<String>,
     val genres: List<String>,
     val rating: Double,
     val views: Long,

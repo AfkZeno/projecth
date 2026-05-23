@@ -6,7 +6,7 @@ import com.backend.presentation.response.MangaResponse
 import com.backend.util.slugify
 
 object MangaMapper {
-    fun toDomain(request: CreateMangaRequest, coverImageUrl: String? = null): Manga {
+    fun toDomain(request: CreateMangaRequest, coverImageUrl: String? = null, publicId: String? = null): Manga {
         return Manga(
             title = request.title,
             slug = request.title.slugify(),
@@ -17,7 +17,9 @@ object MangaMapper {
             coverImageUrl = coverImageUrl,
             status = request.status,
             type = request.type,
-            genres = request.genres
+            tags = request.tags,
+            genres = request.genres,
+            coverImagePublicId = publicId
         )
     }
     fun toResponse(manga: Manga): MangaResponse {
@@ -33,11 +35,13 @@ object MangaMapper {
             bannerImageUrl = manga.bannerImageUrl,
             status = manga.status,
             type = manga.type,
+            tags = manga.tags,
             genres = manga.genres,
             rating = manga.rating,
             views = manga.views,
             createdAt = manga.createdAt,
-            updatedAt = manga.updatedAt
+            updatedAt = manga.updatedAt,
+
         )
     }
 }

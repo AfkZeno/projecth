@@ -15,9 +15,9 @@ import org.jetbrains.exposed.v1.r2dbc.selectAll
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
 
 class MangaRepositoryImpl(private val db: R2dbcDatabase): MangaRepository {
-    override suspend fun createManga(manga: Manga): Manga {
+    override suspend fun createManga(manga: Manga): Int {
         return suspendTransaction(db) {
-            val statement = Mangas.insert {
+           Mangas.insert {
                 it[title] = manga.title
                 it[slug] = manga.slug
                 it[alternativeTitles] = manga.alternativeTitles?.let { titles -> kotlinx.serialization.json.Json.encodeToString(titles) }
@@ -35,9 +35,8 @@ class MangaRepositoryImpl(private val db: R2dbcDatabase): MangaRepository {
                 it[createdAt] = manga.createdAt
                 it[updatedAt] = manga.updatedAt
                 it[tags] = kotlinx.serialization.json.Json.encodeToString(manga.tags)
-            }
-            val id = statement[Mangas.id]
-            manga.copy(id = id.value)
+                it[coverImagePublicId] = manga.coverImagePublicId
+            }[Mangas.id].value
         }
     }
 

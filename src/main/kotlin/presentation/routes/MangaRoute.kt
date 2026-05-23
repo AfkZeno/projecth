@@ -1,87 +1,51 @@
 package com.backend.presentation.routes
 
+import com.backend.config.logger
 import com.backend.domain.service.MangaService
+import com.backend.infrastructure.cloudinary.CloudinaryService
 import com.backend.presentation.request.CreateMangaRequest
+import com.backend.presentation.response.GlobalResponse
 import com.backend.presentation.response.HealthResponse
 import io.ktor.http.*
-import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
-fun Application.mangaRoute(){
+fun Application.mangaRoute() {
     val service by inject<MangaService>()
+    val cloudinary by inject<CloudinaryService>()
+
+
 
     routing {
 
-        get("/health"){
+        get("/health") {
             call.respond(HealthResponse("xd"))
         }
 
-        post("/new/manga") {
-            try {
-                val multipart = call.receiveMultipart()
-                var request: CreateMangaRequest? = null
-                var coverFile: PartData.FileItem? = null
+        post("/upload/image") {
+            logger.info("Uploading image...")
+            val multipart = call.receiveMultipart()
 
-                multipart.forEachPart { part ->
-                    when(part) {
-                        is PartData.FormItem -> {
-                            when (part.name){
-                                "title" -> {
-                                    request = (request ?: CreateMangaRequest(title = "")).copy(
-                                        title = part.value
-                                    )
-                                }
-                                "description" -> {
-                                    request = request?.copy(description = part.value)
-                                }
-                                "author" -> {
-                                    request = request?.copy(author = part.value)
-                                }
-                                "artist" -> {
-                                    request = request?.copy(artist = part.value)
-                                }
-                                "status" -> {
-                                    request = request?.copy(status = enumValueOf(part.value))
-                                }
-                                "type" -> {
-                                    request = request?.copy(type = enumValueOf(part.value))
-                                }
-                                "tags" -> {
-                                    val tagsList = part.value.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                                    request = request?.copy(tags = tagsList)
-                                }
-                                "genres" -> {
-                                    val genresList = part.value.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                                    request = request?.copy(genres = genresList)
-                                }
-                            }
-                        }
-                        is PartData.FileItem -> {
-                            if(part.name == "cover"){
-                                coverFile = part
-                            }
-                        }
-                        else -> part.release()
-                    }
-                }
-                val finalRequest = request ?: throw IllegalArgumentException("No se recibieron datos del manga")
-                val response = service.createManga(
-                    request = finalRequest,
-                    coverFile = coverFile
-                )
-                call.respond(HttpStatusCode.Created, response)
-            }catch (e: IllegalArgumentException) {
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
-            } catch (e: Exception) {
-                e.printStackTrace()
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Error al crear el manga"))
-            }
+            val result = cloudinary.uploadImage(multipart)
+            logger.info("publicId = ${result.publicId}, url = ${result.url}")
+            call.respond(result)
         }
-        get("/mangas"){
+
+        post("/new/manga") {
+            val request = call.receive<CreateMangaRequest>()
+            logger.info("request: $request")
+            val url = call.request.queryParameters["imageUrl"]
+            val publicId = call.request.queryParameters["publicId"]
+
+            logger.info("url = $url, publicId = $publicId")
+            val id = service.createManga(request, url, publicId)
+            logger.info("new manga id: $id")
+            call.respond(HttpStatusCode.Created, GlobalResponse("Manga creado exitosamente, ID: $id"))
+        }
+        get("/mangas") {
             val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20
             val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
 

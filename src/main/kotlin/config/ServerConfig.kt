@@ -16,10 +16,14 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.request.path
+import io.ktor.util.logging.KtorSimpleLogger
 import kotlinx.serialization.json.Json
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.slf4j.event.Level
+
+
+val logger = KtorSimpleLogger("Global Logger")
 
 fun Application.configureContentNegotiation() {
     install(ContentNegotiation) {
@@ -78,7 +82,4 @@ fun Application.configureAuth(){
     install(Authentication){
 
     }
-}
-fun Application.configureDatabase(){
-
 }

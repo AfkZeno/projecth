@@ -28,8 +28,10 @@ data class Manga(
     val views: Long = 0,
     val followers: Long = 0,
 
-    val tags: List<String>? = null,
+    val tags: List<String>,
 
     val createdAt: Instant = Instant.now(),
-    val updatedAt: Instant = Instant.now()
+    val updatedAt: Instant = Instant.now(),
+
+    val coverImagePublicId: String? = null
 )
