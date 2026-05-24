@@ -41,7 +41,6 @@ fun Application.module(){
     launch {
         try {
             DbFactory.initDb(db)
-            DbFactory.command("ALTER TABLE mangas ADD COLUMN slug TEXT NOT NULL; CREATE UNIQUE INDEX mangas_slug_idx ON mangas(slug);")
         }catch (e: Exception){
             log.error("Error al inicializar la base de datos", e)
         }

@@ -11,7 +11,7 @@ object Chapters : IntIdTable("chapters") {
     )
     val title = varchar("title", 255).nullable()
     val chapterNumber = decimal("chapter_number", 5, 2)
-    val images = text("images")
+
     val views = long("views").default(0)
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
 

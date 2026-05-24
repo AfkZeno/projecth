@@ -39,9 +39,9 @@ object MangaMapper {
             genres = manga.genres,
             rating = manga.rating,
             views = manga.views,
-            createdAt = manga.createdAt,
-            updatedAt = manga.updatedAt,
-
+            followers = manga.followers,
+            createdAt = manga.createdAt.toString(),
+            updatedAt = manga.updatedAt.toString(),
         )
     }
 }

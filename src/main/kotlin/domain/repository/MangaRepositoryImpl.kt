@@ -88,4 +88,13 @@ class MangaRepositoryImpl(private val db: R2dbcDatabase): MangaRepository {
             }
         )
     }
+
+    override suspend fun findAndValidate(id: Int): Boolean {
+        return suspendTransaction {
+            val exists = Mangas.selectAll()
+                .where { Mangas.id eq id }
+                .empty().not()
+            exists
+        }
+    }
 }

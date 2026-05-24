@@ -25,4 +25,9 @@ class MangaService(private val repository: MangaRepository) : KoinComponent {
     suspend fun getAllMangas(limit: Int = 20, offset: Int = 0): List<MangaResponse> {
         return repository.findAll(limit, offset).map { MangaMapper.toResponse(it) }
     }
+
+    suspend fun validateExists(id: Int): Boolean {
+        val exists = repository.findAndValidate(id)
+        return exists
+    }
 }

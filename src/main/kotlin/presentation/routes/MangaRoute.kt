@@ -50,7 +50,7 @@ fun Application.mangaRoute() {
             val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
 
             val mangas = service.getAllMangas(limit, offset)
-            call.respond(mangas)
+            call.respond(HttpStatusCode.OK, mangas)
         }
         get("/manga/{id}") {
             val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)

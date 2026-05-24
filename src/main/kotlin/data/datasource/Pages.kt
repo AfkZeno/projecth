@@ -13,8 +13,4 @@ object Pages : IntIdTable("pages") {
     val imageUrl = text("image_url")
 
     val cloudinaryPublicId = varchar("cloudinary_public_id", 255)
-
-    val width = integer("width").nullable()
-
-    val height = integer("height").nullable()
 }

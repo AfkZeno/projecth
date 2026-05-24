@@ -1,7 +1,10 @@
 package com.backend.di
 
+import com.backend.data.repository.ChaptersRepository
 import com.backend.data.repository.MangaRepository
+import com.backend.domain.repository.ChaptersRepositoryImpl
 import com.backend.domain.repository.MangaRepositoryImpl
+import com.backend.domain.service.ChapterService
 import com.backend.domain.service.MangaService
 import com.backend.infrastructure.cloudinary.CloudinaryConfig
 import com.backend.infrastructure.cloudinary.CloudinaryService
@@ -9,7 +12,6 @@ import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactoryOptions
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.koin.dsl.module
-
 
 
 val databaseModule = module {
@@ -43,8 +45,10 @@ val KoinModules = module {
     includes(databaseModule,storageModule)
     //repo
     single<MangaRepository> { MangaRepositoryImpl(get()) }
+    single<ChaptersRepository> { ChaptersRepositoryImpl(get()) }
     //service
     single { MangaService(get()) }
+    single { ChapterService(get()) }
 }
 
 
