@@ -41,7 +41,9 @@ object MangaMapper {
             createdAt = manga.createdAt.toString(),
             updatedAt = manga.updatedAt.toString(),
             coverImageKey = manga.coverImageKey,
-            bannerImageKey = manga.bannerImageKey
+            bannerImageKey = manga.bannerImageKey,
+            coverImageUrl = null,
+            bannerImageUrl = null
         )
     }
 }

@@ -3,6 +3,7 @@ package com.backend.domain.service
 import com.backend.data.mapper.MangaMapper
 import com.backend.data.mapper.MangaMapper.toDomain
 import com.backend.data.repository.MangaRepository
+import com.backend.infrastructure.backblaze.BackBlazeService
 import com.backend.presentation.request.CreateMangaRequestWithImages
 import com.backend.presentation.response.MangaResponse
 import org.koin.core.component.KoinComponent

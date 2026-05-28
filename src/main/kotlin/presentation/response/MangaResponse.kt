@@ -24,5 +24,7 @@ data class MangaResponse(
     val createdAt: String,
     val updatedAt: String,
     val coverImageKey: String?,
-    val bannerImageKey: String?
+    val bannerImageKey: String?,
+    val coverImageUrl: String?,
+    val bannerImageUrl: String?
 )

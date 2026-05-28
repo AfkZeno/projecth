@@ -57,14 +57,34 @@ fun Application.mangaRoute() {
             val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
 
             val mangas = service.getAllMangas(limit, offset)
-            call.respond(HttpStatusCode.OK, mangas)
+            val finalMangas = mangas.map { manga ->
+                manga.copy(
+                    coverImageUrl = manga.coverImageKey?.let {
+                        backblaze.generatePresignedUrl(it, expiresInMinutes = 60)
+                    },
+                    bannerImageUrl = manga.bannerImageKey?.let {
+                        backblaze.generatePresignedUrl(it, expiresInMinutes = 60)
+                    }
+                )
+            }
+
+            call.respond(HttpStatusCode.OK, finalMangas)
         }
         get("/manga/{id}") {
             val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
             val manga = service.getMangaById(id)
 
-            if (manga != null) {
-                call.respond(manga)
+            val enrichedManga = manga?.copy(
+                coverImageUrl = manga.coverImageKey?.let {
+                    backblaze.generatePresignedUrl(it, 120)
+                },
+                bannerImageUrl = manga.bannerImageKey?.let {
+                    backblaze.generatePresignedUrl(it, 120)
+                }
+            )
+
+            if (enrichedManga != null) {
+                call.respond(enrichedManga)
             } else {
                 call.respond(HttpStatusCode.NotFound, "Manga no encontrado")
             }
