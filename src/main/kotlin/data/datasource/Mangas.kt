@@ -13,8 +13,6 @@ object Mangas : IntIdTable("mangas") {
     val slug =  varchar("slug", 255).uniqueIndex()
     val alternativeTitles = text("alternative_titles").nullable()
     val description = text("description").nullable()
-    val coverImageUrl = text("cover_image_url").nullable()
-    val bannerImageUrl = text("banner_image_url").nullable()
     val author = varchar("author", 255).nullable()
     val artist = varchar("artist", 120).nullable()
 
@@ -32,5 +30,6 @@ object Mangas : IntIdTable("mangas") {
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
     val updatedAt = timestamp("updated_at").defaultExpression(CurrentTimestamp)
 
-    val coverImagePublicId = text("public_id").nullable()
+    val coverImageKey = text("cover_image_key").nullable()   // ← nuevo
+    val bannerImageKey = text("banner_image_key").nullable()
 }

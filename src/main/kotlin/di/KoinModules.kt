@@ -6,8 +6,8 @@ import com.backend.domain.repository.ChaptersRepositoryImpl
 import com.backend.domain.repository.MangaRepositoryImpl
 import com.backend.domain.service.ChapterService
 import com.backend.domain.service.MangaService
-import com.backend.infrastructure.cloudinary.CloudinaryConfig
-import com.backend.infrastructure.cloudinary.CloudinaryService
+import com.backend.infrastructure.backblaze.BackBlazeConfig
+import com.backend.infrastructure.backblaze.BackBlazeService
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactoryOptions
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
@@ -26,17 +26,19 @@ val databaseModule = module {
 
 val storageModule = module {
     single {
-        CloudinaryConfig(
-            cloudName = System.getenv("CLOUDINARY_CLOUD_NAME")
-                ?: throw IllegalStateException("CLOUDINARY_CLOUD_NAME no configurada"),
-            apiKey = System.getenv("CLOUDINARY_API_KEY")
-                ?: throw IllegalStateException("CLOUDINARY_API_KEY no configurada"),
-            apiSecret = System.getenv("CLOUDINARY_API_SECRET")
-                ?: throw IllegalStateException("CLOUDINARY_API_SECRET no configurada")
+        BackBlazeConfig(
+            bucketName = System.getenv("B2_BUCKET_NAME")
+                ?: throw IllegalStateException("B2_BUCKET_NAME no configurada"),
+
+            keyId = System.getenv("B2_KEY_ID")
+                ?: throw IllegalStateException("B2_KEY_ID no configurada"),
+
+            applicationKey = System.getenv("B2_APPLICATION_KEY")
+                ?: throw IllegalStateException("B2_APPLICATION_KEY no configurada")
         )
     }
     single {
-        CloudinaryService(get())
+        BackBlazeService(get())
     }
 }
 

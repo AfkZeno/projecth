@@ -24,8 +24,6 @@ class MangaRepositoryImpl(private val db: R2dbcDatabase): MangaRepository {
                 it[description] = manga.description
                 it[author] = manga.author
                 it[artist] = manga.artist
-                it[coverImageUrl] = manga.coverImageUrl
-                it[bannerImageUrl] = manga.bannerImageUrl
                 it[status] = manga.status
                 it[type] = manga.type
                 it[genres] = kotlinx.serialization.json.Json.encodeToString(manga.genres)
@@ -35,7 +33,8 @@ class MangaRepositoryImpl(private val db: R2dbcDatabase): MangaRepository {
                 it[createdAt] = manga.createdAt
                 it[updatedAt] = manga.updatedAt
                 it[tags] = kotlinx.serialization.json.Json.encodeToString(manga.tags)
-                it[coverImagePublicId] = manga.coverImagePublicId
+                it[coverImageKey] = manga.coverImageKey
+                it[bannerImageKey] = manga.bannerImageKey
             }[Mangas.id].value
         }
     }
@@ -71,8 +70,6 @@ class MangaRepositoryImpl(private val db: R2dbcDatabase): MangaRepository {
             description = this[Mangas.description],
             author = this[Mangas.author],
             artist = this[Mangas.artist],
-            coverImageUrl = this[Mangas.coverImageUrl],
-            bannerImageUrl = this[Mangas.bannerImageUrl],
             status = this[Mangas.status],
             type = this[Mangas.type],
             genres = this[Mangas.genres].let {
@@ -85,7 +82,9 @@ class MangaRepositoryImpl(private val db: R2dbcDatabase): MangaRepository {
             updatedAt = this[Mangas.updatedAt],
             tags = this[Mangas.tags].let {
                 kotlinx.serialization.json.Json.decodeFromString(it)
-            }
+            },
+            coverImageKey = this[Mangas.coverImageKey],
+            bannerImageKey = this[Mangas.bannerImageKey]
         )
     }
 

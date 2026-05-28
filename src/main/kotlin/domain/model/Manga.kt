@@ -16,9 +16,6 @@ data class Manga(
     val author: String? = null,
     val artist: String? = null,
 
-    val coverImageUrl: String? = null,
-    val bannerImageUrl: String? = null,
-
     val status: MangaStatus = MangaStatus.ONGOING,
     val type: MangaType = MangaType.MANGA,
 
@@ -33,5 +30,6 @@ data class Manga(
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
 
-    val coverImagePublicId: String? = null
+    val coverImageKey: String? = null,
+    val bannerImageKey: String? = null
 )

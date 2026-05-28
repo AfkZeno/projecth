@@ -14,8 +14,6 @@ data class MangaResponse(
     val description: String?,
     val author: String?,
     val artist: String?,
-    val coverImageUrl: String?,
-    val bannerImageUrl: String?,
     val status: MangaStatus,
     val type: MangaType,
     val tags: List<String>,
@@ -24,5 +22,7 @@ data class MangaResponse(
     val followers: Long,
     val views: Long,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val coverImageKey: String?,
+    val bannerImageKey: String?
 )

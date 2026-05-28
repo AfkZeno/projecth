@@ -27,7 +27,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 dependencies {
 
-    implementation(libs.cloudinary)
+    implementation(libs.aws)
 
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.auth)

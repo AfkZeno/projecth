@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UploadResponse (
     val url: String?,
-    val publicId: String?,
+    val storageKey: String?,
 )

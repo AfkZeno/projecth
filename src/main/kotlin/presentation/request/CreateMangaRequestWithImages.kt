@@ -5,7 +5,7 @@ import com.backend.domain.enums.MangaType
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CreateMangaRequest(
+data class CreateMangaRequestWithImages(
     val title: String,
     val alternativeTitles: List<String>? = null,
     val description: String? = null,
@@ -15,4 +15,6 @@ data class CreateMangaRequest(
     val type: MangaType = MangaType.MANGA,
     val tags: List<String> = emptyList(),
     val genres: List<String> = emptyList(),
+    val coverKey: String?,
+    val bannerKey: String?
 )

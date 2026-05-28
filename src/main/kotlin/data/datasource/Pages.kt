@@ -9,8 +9,5 @@ object Pages : IntIdTable("pages") {
     )
 
     val pageNumber = integer("page_number")
-
-    val imageUrl = text("image_url")
-
-    val cloudinaryPublicId = varchar("cloudinary_public_id", 255)
+    val imageKey = varchar("image_key", 500).nullable()   // ← nuevo
 }

@@ -1,12 +1,12 @@
 package com.backend.data.mapper
 
 import com.backend.domain.model.Manga
-import com.backend.presentation.request.CreateMangaRequest
+import com.backend.presentation.request.CreateMangaRequestWithImages
 import com.backend.presentation.response.MangaResponse
 import com.backend.util.slugify
 
 object MangaMapper {
-    fun toDomain(request: CreateMangaRequest, coverImageUrl: String? = null, publicId: String? = null): Manga {
+    fun toDomain(request: CreateMangaRequestWithImages): Manga {
         return Manga(
             title = request.title,
             slug = request.title.slugify(),
@@ -14,12 +14,12 @@ object MangaMapper {
             description = request.description,
             author = request.author,
             artist = request.artist,
-            coverImageUrl = coverImageUrl,
             status = request.status,
             type = request.type,
             tags = request.tags,
             genres = request.genres,
-            coverImagePublicId = publicId
+            coverImageKey = request.coverKey,
+            bannerImageKey = request.bannerKey
         )
     }
     fun toResponse(manga: Manga): MangaResponse {
@@ -31,8 +31,6 @@ object MangaMapper {
             description = manga.description,
             author = manga.author,
             artist = manga.artist,
-            coverImageUrl = manga.coverImageUrl,
-            bannerImageUrl = manga.bannerImageUrl,
             status = manga.status,
             type = manga.type,
             tags = manga.tags,
@@ -42,6 +40,8 @@ object MangaMapper {
             followers = manga.followers,
             createdAt = manga.createdAt.toString(),
             updatedAt = manga.updatedAt.toString(),
+            coverImageKey = manga.coverImageKey,
+            bannerImageKey = manga.bannerImageKey
         )
     }
 }

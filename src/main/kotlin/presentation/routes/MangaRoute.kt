@@ -2,8 +2,8 @@ package com.backend.presentation.routes
 
 import com.backend.config.logger
 import com.backend.domain.service.MangaService
-import com.backend.infrastructure.cloudinary.CloudinaryService
-import com.backend.presentation.request.CreateMangaRequest
+import com.backend.infrastructure.backblaze.BackBlazeService
+import com.backend.presentation.request.CreateMangaRequestWithImages
 import com.backend.presentation.response.GlobalResponse
 import com.backend.presentation.response.HealthResponse
 import io.ktor.http.*
@@ -15,7 +15,7 @@ import org.koin.ktor.ext.inject
 
 fun Application.mangaRoute() {
     val service by inject<MangaService>()
-    val cloudinary by inject<CloudinaryService>()
+    val backblaze by inject<BackBlazeService>()
 
 
 
@@ -24,24 +24,31 @@ fun Application.mangaRoute() {
         get("/health") {
             call.respond(HealthResponse("xd"))
         }
-
+        // ==================== SUBIDA DE IMÁGENES ====================
         post("/upload/image") {
-            logger.info("Uploading image...")
+            println("Uploading image...")
             val multipart = call.receiveMultipart()
+            val folder = call.request.queryParameters["folder"] ?: "mangas/covers"
 
-            val result = cloudinary.uploadImage(multipart)
-            logger.info("publicId = ${result.publicId}, url = ${result.url}")
-            call.respond(result)
+            val result = backblaze.uploadImage(multipart, folder)
+            println("temp url = ${result.url}, key = ${result.storageKey}")
+            call.respond(HttpStatusCode.Created, result)
+        }
+
+        post("/upload/images"){
+            val multipart = call.receiveMultipart()
+            val folder = call.request.queryParameters["folder"] ?: "mangas/pages"
+
+            val results = backblaze.uploadImages(multipart, folder)
+            call.respond(results)
         }
 
         post("/new/manga") {
-            val request = call.receive<CreateMangaRequest>()
-            logger.info("request: $request")
-            val url = call.request.queryParameters["imageUrl"]
-            val publicId = call.request.queryParameters["publicId"]
+            val request = call.receive<CreateMangaRequestWithImages>()
+            println("request: $request")
 
-            logger.info("url = $url, publicId = $publicId")
-            val id = service.createManga(request, url, publicId)
+            logger.info("cover = ${request.coverKey}, banner = ${request.bannerKey}")
+            val id = service.createManga(request)
             logger.info("new manga id: $id")
             call.respond(HttpStatusCode.Created, GlobalResponse("Manga creado exitosamente, ID: $id"))
         }

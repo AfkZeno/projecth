@@ -1,0 +1,156 @@
+package com.backend.infrastructure.backblaze
+
+import aws.sdk.kotlin.runtime.auth.credentials.StaticCredentialsProvider
+import aws.sdk.kotlin.services.s3.S3Client
+import aws.sdk.kotlin.services.s3.deleteObject
+import aws.sdk.kotlin.services.s3.model.GetObjectRequest
+import aws.sdk.kotlin.services.s3.presigners.presignGetObject
+import aws.sdk.kotlin.services.s3.putObject
+import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.net.url.Url
+import com.backend.presentation.response.UploadResponse
+import com.backend.util.allowedTypes
+import io.ktor.http.content.*
+import io.ktor.utils.io.*
+import kotlinx.io.readByteArray
+import org.koin.core.component.KoinComponent
+import java.util.*
+import kotlin.time.Duration.Companion.minutes
+
+
+class BackBlazeService(private val config: BackBlazeConfig) : KoinComponent {
+    private val maxImageSize = 10 * 1024 * 1024
+    private val s3Client by lazy {
+        S3Client {
+            region = "us-east-005"
+            endpointUrl = Url.parse("https://s3.us-east-005.backblazeb2.com")
+            credentialsProvider = StaticCredentialsProvider {
+                accessKeyId = config.keyId
+                secretAccessKey = config.applicationKey
+            }
+        }
+    }
+    suspend fun uploadImage(
+        multipart: MultiPartData,
+        folder: String = "mangas/covers"
+    ): UploadResponse {
+        var storageKey: String? = null
+
+
+        multipart.forEachPart { part ->
+            if (part is PartData.FileItem) {
+                println("File received: name=${part.originalFileName}, " +
+                        "contentType=${part.contentType}")
+                validateImage(part)
+
+                val bytes = part
+                    .provider()
+                    .readRemaining()
+                    .readByteArray()
+                validateSize(bytes)
+                val fileName = "${UUID.randomUUID()}-${part.originalFileName}"
+                val key = "$folder/$fileName"
+                s3Client.putObject{
+                    this.bucket = config.bucketName
+                    this.key = key
+                    this.body = ByteStream.fromBytes(bytes)
+                    this.contentType = part.contentType?.toString()
+                }
+                storageKey = key
+            }
+            part.release()
+        }
+        if (storageKey == null) {
+            throw IllegalArgumentException("No image uploaded")
+        }
+        val tempUrl = generatePresignedUrl(storageKey, 60)
+        return UploadResponse(
+            url = tempUrl,
+            storageKey = storageKey
+        )
+    }
+
+    suspend fun generatePresignedUrl(key: String, expiresInMinutes: Long = 60): String {
+        val getObjectRequest = GetObjectRequest {
+            bucket = config.bucketName
+            this.key = key
+        }
+        val presignedRequest = s3Client.presignGetObject(
+            getObjectRequest,
+            expiresInMinutes.minutes
+        )
+        return presignedRequest.url.toString()
+    }
+
+    private fun validateImage(part: PartData): Boolean {
+        if (part.contentType !in allowedTypes) {
+            throw IllegalArgumentException("Invalid image type")
+        }
+        return true
+    }
+
+    private fun validateSize(bytes: ByteArray): Boolean {
+        if (bytes.size > maxImageSize) {
+            throw IllegalArgumentException("Image too large")
+        }
+        println("file size: ${bytes.size}")
+        return true
+    }
+
+    suspend fun deleteImage(key: String) {
+        s3Client.deleteObject {
+            bucket = config.bucketName
+            this.key = key
+        }
+    }
+
+    suspend fun uploadImages(
+        multipart: MultiPartData,
+        folder: String = "mangas/pages"
+    ): List<UploadResponse> {
+        val uploadedImages = mutableListOf<UploadResponse>()
+        multipart.forEachPart { part ->
+            if (part is PartData.FileItem) {
+                println("File received: name=${part.originalFileName}, contentType=${part.contentType}")
+
+                validateImage(part)
+
+                val bytes = part.provider().readRemaining().readByteArray()
+                validateSize(bytes)
+
+                // Generar nombre único
+                val fileName = "${UUID.randomUUID()}-${part.originalFileName ?: "image.jpg"}"
+                val key = "$folder/$fileName"
+
+                // Subir a Backblaze
+                s3Client.putObject {
+                    bucket = config.bucketName
+                    this.key = key
+                    body = ByteStream.fromBytes(bytes)
+                    contentType = part.contentType?.toString()
+                }
+
+                // Generar URL temporal
+                val tempUrl = generatePresignedUrl(key, 60)
+
+                uploadedImages.add(
+                    UploadResponse(
+                        url = tempUrl,
+                        storageKey = key
+                    )
+                )
+
+                println("Image uploaded successfully: $key")
+            }
+            part.release()
+        }
+
+        if (uploadedImages.isEmpty()) {
+            throw IllegalArgumentException("No se subió ninguna imagen")
+        }
+
+        return uploadedImages
+    }
+
+
+}
