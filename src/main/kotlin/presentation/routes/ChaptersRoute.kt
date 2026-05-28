@@ -8,8 +8,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
+import org.koin.ktor.ext.get
 import org.koin.ktor.ext.inject
 
 fun Application.chaptersRoute(){
@@ -41,6 +43,15 @@ fun Application.chaptersRoute(){
             }catch (e: Exception){
                 call.respond(HttpStatusCode.BadRequest, GlobalResponse("Error al añadir el capitulo, mensaje: ${e.message}"))
             }
+        }
+        get("/chapters"){
+            val mangaId = call.parameters["id"]?.toIntOrNull()
+            if (mangaId == null) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid manga id")
+                return@get
+            }
+            val chapters = service.getChapters(mangaId)
+            call.respond(HttpStatusCode.OK, chapters)
         }
     }
 }
