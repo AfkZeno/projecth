@@ -1,16 +1,13 @@
 package com.backend.presentation.routes
 
-import com.backend.data.repository.PagesRepository
 import com.backend.domain.service.PagesService
 import com.backend.infrastructure.backblaze.BackBlazeService
 import com.backend.presentation.response.GlobalResponse
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.Application
-import io.ktor.server.plugins.BadRequestException
-import io.ktor.server.request.receiveMultipart
-import io.ktor.server.response.respond
-import io.ktor.server.routing.post
-import io.ktor.server.routing.routing
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Application.pagesRoute(){
@@ -20,8 +17,14 @@ fun Application.pagesRoute(){
 
     routing {
         post("/upload/pages/{chapterId}") {
+
             val chapterId = call.parameters["chapterId"]?.toIntOrNull()
-                ?: throw BadRequestException("Chapter ID inválido")
+            println("chapterId: $chapterId")
+            if (chapterId == null) {
+                call.respond(HttpStatusCode.BadRequest, GlobalResponse("ID Invalido"))
+                return@post
+            }
+
             try {
                 val uploadedPages = backBlazeService.uploadChapterPages(
                     chapterId = chapterId,
@@ -32,7 +35,7 @@ fun Application.pagesRoute(){
                 }
                 call.respond(HttpStatusCode.OK, response)
             }catch (e: Exception){
-                call.respond(HttpStatusCode.BadRequest, GlobalResponse(e.message ?: "Error al subir las paginas"))
+                call.respond(HttpStatusCode.BadRequest, GlobalResponse("Error al subir las paginas (catch), mensaje: ${e.localizedMessage}"))
             }
         }
     }

@@ -6,6 +6,7 @@ import com.backend.di.databaseModule
 import com.backend.di.storageModule
 import com.backend.presentation.routes.chaptersRoute
 import com.backend.presentation.routes.mangaRoute
+import com.backend.presentation.routes.pagesRoute
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
@@ -67,6 +68,7 @@ fun Application.configureKoin() {
 fun Application.configureRoutes() {
     mangaRoute()
     chaptersRoute()
+    pagesRoute()
 }
 fun Application.configureMonitoring() {
     install(CallLogging) {
