@@ -33,7 +33,7 @@ fun Application.pagesRoute(){
                 val response = uploadedPages.forEach { page ->
                     service.uploadPages(chapterId, page)
                 }
-                call.respond(HttpStatusCode.OK, response)
+                call.respond(HttpStatusCode.OK, GlobalResponse("Paginas añadidas exitosamente, resumen: $uploadedPages"))
             }catch (e: Exception){
                 call.respond(HttpStatusCode.BadRequest, GlobalResponse("Error al subir las paginas (catch), mensaje: ${e.localizedMessage}"))
             }
