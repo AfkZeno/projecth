@@ -2,10 +2,13 @@ package com.backend.di
 
 import com.backend.data.repository.ChaptersRepository
 import com.backend.data.repository.MangaRepository
+import com.backend.data.repository.PagesRepository
 import com.backend.domain.repository.ChaptersRepositoryImpl
 import com.backend.domain.repository.MangaRepositoryImpl
+import com.backend.domain.repository.PagesRepositoryImpl
 import com.backend.domain.service.ChapterService
 import com.backend.domain.service.MangaService
+import com.backend.domain.service.PagesService
 import com.backend.infrastructure.backblaze.BackBlazeConfig
 import com.backend.infrastructure.backblaze.BackBlazeService
 import io.r2dbc.spi.ConnectionFactories
@@ -48,9 +51,11 @@ val KoinModules = module {
     //repo
     single<MangaRepository> { MangaRepositoryImpl(get()) }
     single<ChaptersRepository> { ChaptersRepositoryImpl(get()) }
+    single<PagesRepository> { PagesRepositoryImpl(get()) }
     //service
     single { MangaService(get()) }
     single { ChapterService(get()) }
+    single { PagesService(get()) }
 }
 
 

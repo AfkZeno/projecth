@@ -8,6 +8,7 @@ import aws.sdk.kotlin.services.s3.presigners.presignGetObject
 import aws.sdk.kotlin.services.s3.putObject
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.net.url.Url
+import com.backend.domain.model.UploadedPage
 import com.backend.presentation.response.UploadResponse
 import com.backend.util.allowedTypes
 import io.ktor.http.content.*
@@ -152,5 +153,53 @@ class BackBlazeService(private val config: BackBlazeConfig) : KoinComponent {
         return uploadedImages
     }
 
+
+    suspend fun uploadChapterPages(
+        chapterId: Int,
+        multipart: MultiPartData
+    ): List<UploadedPage> {
+        val uploadedPages = mutableListOf<UploadedPage>()
+        var pageNumber = 1
+        try {
+            multipart.forEachPart { part ->
+                if (part is PartData.FileItem) {
+                    println("Procesando página $pageNumber: ${part.originalFileName}")
+                    validateImage(part)
+                    val bytes = part.provider().readRemaining().readByteArray()
+                    validateSize(bytes)
+
+                    val extension = part.originalFileName?.substringAfterLast(".") ?: "jpg"
+                    val fileName = "${pageNumber.toString().padStart(3, '0')}.$extension"
+                    val key = "pages/$chapterId/$fileName"     // ← Estructura clara
+                    s3Client.putObject {
+                        bucket = config.bucketName
+                        this.key = key
+                        body = ByteStream.fromBytes(bytes)
+                        contentType = part.contentType?.toString() ?: "image/jpeg"
+                    }
+                    uploadedPages.add(
+                        UploadedPage(
+                            pageNumber = pageNumber,
+                            imageKey = key,
+                            contentType = part.contentType?.toString(),
+                            fileSize = bytes.size.toLong()
+                        )
+                    )
+                    println("Página $pageNumber subida: $key")
+                    pageNumber++
+                }
+                part.release()
+
+            }
+            if (uploadedPages.isEmpty()) {
+                throw IllegalArgumentException("No se subió ninguna página")
+            }
+            return uploadedPages
+        }catch (e: Exception){
+            println("Error subiendo páginas: ${e.message}")
+            throw e
+        }
+
+    }
 
 }
