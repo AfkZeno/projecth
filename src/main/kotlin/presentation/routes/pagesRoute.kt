@@ -30,12 +30,36 @@ fun Application.pagesRoute(){
                     chapterId = chapterId,
                     multipart = call.receiveMultipart()
                 )
-                val response = uploadedPages.forEach { page ->
+                uploadedPages.forEach { page ->
                     service.uploadPages(chapterId, page)
                 }
+                println("Exito: $uploadedPages")
                 call.respond(HttpStatusCode.OK, GlobalResponse("Paginas añadidas exitosamente, resumen: $uploadedPages"))
             }catch (e: Exception){
                 call.respond(HttpStatusCode.BadRequest, GlobalResponse("Error al subir las paginas (catch), mensaje: ${e.localizedMessage}"))
+            }
+        }
+
+        get("/pages/{chapterId}"){
+            val chapterId = call.parameters["chapterId"]?.toIntOrNull()
+            println("chapterId: $chapterId")
+            if (chapterId == null) {
+                call.respond(HttpStatusCode.BadRequest, GlobalResponse("ID Invalido"))
+                return@get
+            }
+            try {
+                val pages = service.getPages(chapterId)
+                val finalPages = pages.map { pagesResponse ->
+                    pagesResponse.copy(
+                        imageUrl = pagesResponse.imageKey?.let {
+                            backBlazeService.generatePresignedUrl(it, 120)
+                        }
+                    )
+                }
+                call.respond(HttpStatusCode.OK, finalPages)
+            }catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest)
+                println("Hubo un error al obtener las paginas, ${e.message}")
             }
         }
     }
