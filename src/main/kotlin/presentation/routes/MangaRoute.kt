@@ -34,15 +34,6 @@ fun Application.mangaRoute() {
             println("temp url = ${result.url}, key = ${result.storageKey}")
             call.respond(HttpStatusCode.Created, result)
         }
-
-        post("/upload/images"){
-            val multipart = call.receiveMultipart()
-            val folder = call.request.queryParameters["folder"] ?: "mangas/pages"
-
-            val results = backblaze.uploadImages(multipart, folder)
-            call.respond(results)
-        }
-
         post("/new/manga") {
             val request = call.receive<CreateMangaRequestWithImages>()
             println("request: $request")

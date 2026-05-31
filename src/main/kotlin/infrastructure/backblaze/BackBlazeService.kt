@@ -8,7 +8,9 @@ import aws.sdk.kotlin.services.s3.presigners.presignGetObject
 import aws.sdk.kotlin.services.s3.putObject
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.net.url.Url
+import com.backend.domain.enums.ImageType
 import com.backend.domain.model.UploadedPage
+import com.backend.infrastructure.webp.ImagePipeline
 import com.backend.presentation.response.UploadResponse
 import com.backend.util.allowedTypes
 import io.ktor.http.content.*
@@ -19,7 +21,9 @@ import java.util.*
 import kotlin.time.Duration.Companion.minutes
 
 
-class BackBlazeService(private val config: BackBlazeConfig) : KoinComponent {
+class BackBlazeService(private val config: BackBlazeConfig,
+    private val imagePipeline: ImagePipeline
+) : KoinComponent {
     private val maxImageSize = 10 * 1024 * 1024
     private val s3Client by lazy {
         S3Client {
@@ -49,12 +53,18 @@ class BackBlazeService(private val config: BackBlazeConfig) : KoinComponent {
                     .readRemaining()
                     .readByteArray()
                 validateSize(bytes)
+
+                val webpBytes = imagePipeline.process(
+                    bytes,
+                    ImageType.COVER
+                )
+
                 val fileName = "${UUID.randomUUID()}-${part.originalFileName}"
                 val key = "$folder/$fileName"
                 s3Client.putObject{
                     this.bucket = config.bucketName
                     this.key = key
-                    this.body = ByteStream.fromBytes(bytes)
+                    this.body = ByteStream.fromBytes(webpBytes)
                     this.contentType = part.contentType?.toString()
                 }
                 storageKey = key
@@ -105,54 +115,6 @@ class BackBlazeService(private val config: BackBlazeConfig) : KoinComponent {
         }
     }
 
-    suspend fun uploadImages(
-        multipart: MultiPartData,
-        folder: String = "mangas/pages"
-    ): List<UploadResponse> {
-        val uploadedImages = mutableListOf<UploadResponse>()
-        multipart.forEachPart { part ->
-            if (part is PartData.FileItem) {
-                println("File received: name=${part.originalFileName}, contentType=${part.contentType}")
-
-                validateImage(part)
-
-                val bytes = part.provider().readRemaining().readByteArray()
-                validateSize(bytes)
-
-                // Generar nombre único
-                val fileName = "${UUID.randomUUID()}-${part.originalFileName ?: "image.jpg"}"
-                val key = "$folder/$fileName"
-
-                // Subir a Backblaze
-                s3Client.putObject {
-                    bucket = config.bucketName
-                    this.key = key
-                    body = ByteStream.fromBytes(bytes)
-                    contentType = part.contentType?.toString()
-                }
-
-                // Generar URL temporal
-                val tempUrl = generatePresignedUrl(key, 60)
-
-                uploadedImages.add(
-                    UploadResponse(
-                        url = tempUrl,
-                        storageKey = key
-                    )
-                )
-
-                println("Image uploaded successfully: $key")
-            }
-            part.release()
-        }
-
-        if (uploadedImages.isEmpty()) {
-            throw IllegalArgumentException("No se subió ninguna imagen")
-        }
-
-        return uploadedImages
-    }
-
 
     suspend fun uploadChapterPages(
         chapterId: Int,
@@ -168,13 +130,18 @@ class BackBlazeService(private val config: BackBlazeConfig) : KoinComponent {
                     val bytes = part.provider().readRemaining().readByteArray()
                     validateSize(bytes)
 
+                    val webpBytes = imagePipeline.process(
+                        bytes,
+                        ImageType.PAGE
+                    )
+
                     val extension = part.originalFileName?.substringAfterLast(".") ?: "jpg"
                     val fileName = "${pageNumber.toString().padStart(3, '0')}.$extension"
-                    val key = "pages/$chapterId/$fileName"     // ← Estructura clara
+                    val key = "pages/$chapterId/$fileName"
                     s3Client.putObject {
                         bucket = config.bucketName
                         this.key = key
-                        body = ByteStream.fromBytes(bytes)
+                        body = ByteStream.fromBytes(webpBytes)
                         contentType = part.contentType?.toString() ?: "image/jpeg"
                     }
                     uploadedPages.add(
@@ -195,7 +162,7 @@ class BackBlazeService(private val config: BackBlazeConfig) : KoinComponent {
                 throw IllegalArgumentException("No se subió ninguna página")
             }
             return uploadedPages
-        }catch (e: Exception){
+        } catch (e: Exception) {
             println("Error subiendo páginas: ${e.message}")
             throw e
         }

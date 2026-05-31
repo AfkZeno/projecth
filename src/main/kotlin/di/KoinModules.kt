@@ -11,6 +11,8 @@ import com.backend.domain.service.MangaService
 import com.backend.domain.service.PagesService
 import com.backend.infrastructure.backblaze.BackBlazeConfig
 import com.backend.infrastructure.backblaze.BackBlazeService
+import com.backend.infrastructure.webp.ImagePipeline
+import com.backend.infrastructure.webp.WebpEncoder
 import io.r2dbc.spi.ConnectionFactories
 import io.r2dbc.spi.ConnectionFactoryOptions
 import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
@@ -41,13 +43,17 @@ val storageModule = module {
         )
     }
     single {
-        BackBlazeService(get())
+        BackBlazeService(get(), get())
     }
 }
 
 
 val KoinModules = module {
     includes(databaseModule,storageModule)
+
+    single  { WebpEncoder() }
+    single { ImagePipeline(get()) }
+
     //repo
     single<MangaRepository> { MangaRepositoryImpl(get()) }
     single<ChaptersRepository> { ChaptersRepositoryImpl(get()) }

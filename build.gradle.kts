@@ -48,6 +48,9 @@ dependencies {
     implementation(libs.postgre)
     runtimeOnly(libs.postgre)
 
+    implementation("com.github.usefulness:webp-imageio:0.10.2")
+    implementation("org.imgscalr:imgscalr-lib:4.2")
+
 
     implementation(libs.koin.logger)
     implementation(libs.datetime)
