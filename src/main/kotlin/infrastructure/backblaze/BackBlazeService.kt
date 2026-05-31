@@ -8,7 +8,6 @@ import aws.sdk.kotlin.services.s3.presigners.presignGetObject
 import aws.sdk.kotlin.services.s3.putObject
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.net.url.Url
-import com.backend.domain.enums.ImageType
 import com.backend.domain.model.UploadedPage
 import com.backend.infrastructure.webp.ImagePipeline
 import com.backend.presentation.response.UploadResponse
@@ -24,7 +23,7 @@ import kotlin.time.Duration.Companion.minutes
 class BackBlazeService(private val config: BackBlazeConfig,
     private val imagePipeline: ImagePipeline
 ) : KoinComponent {
-    private val maxImageSize = 10 * 1024 * 1024
+    private val maxImageSize = 4 * 1024 * 1024
     private val s3Client by lazy {
         S3Client {
             region = "us-east-005"
@@ -52,19 +51,16 @@ class BackBlazeService(private val config: BackBlazeConfig,
                     .provider()
                     .readRemaining()
                     .readByteArray()
+
                 validateSize(bytes)
 
-                val webpBytes = imagePipeline.process(
-                    bytes,
-                    ImageType.COVER
-                )
 
                 val fileName = "${UUID.randomUUID()}-${part.originalFileName}"
                 val key = "$folder/$fileName"
                 s3Client.putObject{
                     this.bucket = config.bucketName
                     this.key = key
-                    this.body = ByteStream.fromBytes(webpBytes)
+                    this.body = ByteStream.fromBytes(bytes)
                     this.contentType = part.contentType?.toString()
                 }
                 storageKey = key
@@ -108,6 +104,11 @@ class BackBlazeService(private val config: BackBlazeConfig,
         return true
     }
 
+    private fun validateMime(part: PartData.FileItem): Boolean {
+        val mime = part.contentType?.toString()
+        return mime == "image/webp"
+    }
+
     suspend fun deleteImage(key: String) {
         s3Client.deleteObject {
             bucket = config.bucketName
@@ -130,10 +131,6 @@ class BackBlazeService(private val config: BackBlazeConfig,
                     val bytes = part.provider().readRemaining().readByteArray()
                     validateSize(bytes)
 
-                    val webpBytes = imagePipeline.process(
-                        bytes,
-                        ImageType.PAGE
-                    )
 
                     val extension = part.originalFileName?.substringAfterLast(".") ?: "jpg"
                     val fileName = "${pageNumber.toString().padStart(3, '0')}.$extension"
@@ -141,7 +138,7 @@ class BackBlazeService(private val config: BackBlazeConfig,
                     s3Client.putObject {
                         bucket = config.bucketName
                         this.key = key
-                        body = ByteStream.fromBytes(webpBytes)
+                        body = ByteStream.fromBytes(bytes)
                         contentType = part.contentType?.toString() ?: "image/jpeg"
                     }
                     uploadedPages.add(
